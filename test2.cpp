@@ -8,7 +8,7 @@
 	using namespace std;
 	//declaring the class
 	string s1, st, num;//input strings
-	int i=2,j=0;
+	int i=2,j=0,m;
 	int brackets=1;
 	float a=0;
 
@@ -82,11 +82,14 @@
 
 	//declaring find function
 
+//( begin ( define f ( lambda ( n ) ( if ( <= n 1 ) 
+//1 ( * n ( f ( - n 1 ) ) ) ) ) ) ( f 1 ) )
+
 	Value find(char x, Env &e) 
 	{
 		if (e.table[x-'a'] != NULL) 
 		{
-			//cout<<"found";
+			//cout<<"found\n";
 			return *(e.table[x-'a']);
 		}
 		else 
@@ -136,7 +139,7 @@
 	//declaring Evalist here
 	Value *bret=new Value;
 	Value *wret=new Value;
-	Value evalList(glistnode *p, Env& e) 
+	Value evalList(glistnode *p, Env& e) //make it ENV& e 
 	{ 
 		if (p->atom == "begin") 
 		{
@@ -160,24 +163,31 @@
 			new_val.link=p;
 			return new_val;
 		}
+		
 		if (p->atom=="if")
 		{
+			//cout<<"enterd if<\n";
 			p=p->next;
 			Value ret=evalNode(p,e);
 			p=p->next;
-			Value iftrue=evalNode(p,e);
-			Value *istrue=new Value;
-			istrue->val=iftrue.val;
-			istrue->tag=0;
-			p=p->next;
-			Value iffalse=evalNode(p,e);
-			Value *isfalse=new Value;
-			isfalse->val=iffalse.val;
-			isfalse->tag=0;
 			if(ret.val==1)
-			return *istrue;
+			{
+				Value iftrue=evalNode(p,e);
+				Value *istrue=new Value;
+				istrue->val=iftrue.val;
+				istrue->tag=0;
+				return *istrue;
+			}
+	
 			else
-			return *isfalse;
+			{
+				p=p->next;
+				Value iffalse=evalNode(p,e);
+				Value *isfalse=new Value;
+				isfalse->val=iffalse.val;
+				isfalse->tag=0;
+				return *isfalse;
+			}
 		}
 		
 		if (p->atom=="<=")
@@ -185,7 +195,7 @@
 			p=p->next;
 			Value v1=evalNode(p,e);
 			Value v2=evalNode(p->next,e);
-			//cout<<v1.val;
+			//cout<<v1.val<<"\n";
 			//cout<<v2.val;		
 			Value *gottrue=new Value;
 			gottrue->val=1;
@@ -325,16 +335,18 @@
 		if(((p->atom).length())==1&&(code>96&&code<123))
 		{
 			char x=s[0];
-			cout<<x<<"\n";
+			//cout<<x<<"\n";
 			Value q=find(x,e);
 			glistnode *z=new glistnode;
 			z=q.link;
 			Env e1;
-			//e1->parent=e;
+			e1.parent=&e;
 			glistnode *s=new glistnode;
 			s=p->next;
 			glistnode *r=new glistnode;
 			r=z->next->down;
+			string y=r->atom;
+			//cout<<y[0]<<"\n";
 			while(s!=NULL)
 			{
 				string y=r->atom;
@@ -345,19 +357,20 @@
 			}
 			return evalNode(z->next->next,e1);
 		}
-		//( ( lambda ( x y ) ( * x y ) ) 6 3 )
+//( ( lambda ( x y ) ( * x y ) ) 6 3 )		
 		
 		if((p->tag)==1)
 		{
 			Value a=evalList(p->down,e);
 			glistnode *c=new glistnode;
 			c=a.link;
+			//display(c);
 			Env e1;
-			//e1->parent=e;
+			e1.parent=&e;
 			glistnode *sp=new glistnode;
-			if(p->next->tag==1)
-			sp=p->next->down->next;
-			else
+			//if(p->next->tag==1)
+			//sp=p->next->down->next;
+			//else
 			sp=p->next;
 			glistnode *rp=new glistnode;
 			rp=c->next->down;
@@ -371,6 +384,7 @@
 			}
 			return evalNode(c->next->next,e1);
 		}
+		
 		if(p->atom=="+")
 		{
 			Value val1=evalNode(p->next,e);
@@ -383,6 +397,7 @@
 		if(p->atom=="*")
 		{
 			Value val1=evalNode(p->next,e);
+			//cout<<val1.val<<"\n";
 			Value val2=evalNode(p->next->next,e);
 			Value *prod=new Value;
 			prod->tag=0;
@@ -430,7 +445,7 @@
   		//display(p);
 		Env e;
 		Value z=evalList(p,e);
-		cout<<z.val;
+		cout<<z.val<<"\n";
 	}
 	void input()
 	{
@@ -452,59 +467,19 @@
 	{
 		float ans=(float)(atof(num.c_str()));
 		return ans;
-		/*cout<<ans;
-		string dot=".";
-		a=0;
-		int m;
- 		m=num.length();
- 		cout<<m;
- 		while(j<((num.length())))
- 		{
-			st.erase(0,m);
-			st=num[j];
-			cout<<st<<"\n";
-			if(strcmp(st.c_str(),dot.c_str())==0)
-			{
-				m=j;
-				cout<<m;
-				break;
-			}
-			j=j+1;
-			cout<<j<<"\n";
-			
-		}
-		j=0;
+		/*a=0;
+		m=num.length();
+		st.erase(0,m);
 		while(j<((num.length())))
 		{
-			st.erase(0,m);
 			st=num[j];
-			while(strcmp(st.c_str(),dot.c_str())!=0)
-			{
-				st=num[j];
-				float k=st[0];
-				k=k-48;
-				a=a+(k*pow(10,m-j-1));
-				j=j+1;
-			}
-			if((strcmp(st.c_str(),dot.c_str())==0))
-			{
-				j=j+1;
-				int u=1;
-				while(j<((num.length())))
-				{
-					st.erase(0,m);
-					st=num[j];
-					float k=st[0];
-					k=k-48;
-					a=a+(k*pow(10,-u));
-					j=j+1;
-					u=u+1;
-				}
-			}
+			float k=st[0];
+			k=k-48;
+			a=a+(k*pow(10,m-j-1));
+			j=j+1;
+		}
 		j=0;
-		return a;
-		//cout<<st;
-		}*/
+		return a;*/
 	}
 	glistnode *makelist()
 	{
@@ -559,7 +534,7 @@
     		}
     		else
 		{
-			brackets=brackets-1;
+				brackets=brackets-1;
     			p->next=NULL;
     			return head;
    		} 
