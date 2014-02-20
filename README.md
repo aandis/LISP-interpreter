@@ -1,4 +1,4 @@
 LISP-interpreter
 ================
 
-Interpreter for the LISP language.
+A C++ based interpreter for LISP language.
